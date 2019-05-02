@@ -13,6 +13,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Oryx.Integration.Tests
 {
+    [Trait("category", "node")]
     public class NodeEndToEndTests : PlatformEndToEndTestsBase
     {
         private const int HostPort = Constants.NodeEndToEndTestsPort;
