@@ -12,8 +12,6 @@ namespace Microsoft.Oryx.Tests.Common
 {
     public abstract class DockerResultBase
     {
-        private readonly Object Lock1 = new Object();
-        private readonly Object Lock2 = new Object();
         public DockerResultBase(Exception exc, string executedCmd)
         {
             Exception = exc;
@@ -34,33 +32,24 @@ namespace Microsoft.Oryx.Tests.Common
 
         public virtual string GetDebugInfo(IDictionary<string, string> extraDefs = null)
         {
+            var sb = new StringBuilder();
+
+            sb.AppendLine();
+            sb.AppendLine("Debugging Information:");
+            sb.AppendLine("----------------------");
 
             var infoFormatter = new DefinitionListFormatter();
-            var infoFormatterString = string.Empty;
-            var result = string.Empty;
-            var sb = new StringBuilder();
 
             infoFormatter.AddDefinition("Executed command", ExecutedCommand);
             if (HasExited) infoFormatter.AddDefinition("Exit code", ExitCode.ToString());
             infoFormatter.AddDefinition("StdOut", StdOut);
             infoFormatter.AddDefinition("StdErr", StdErr);
             infoFormatter.AddDefinition("Exception.Message:", Exception?.Message);
-            infoFormatterString = infoFormatter.ToString();
+            infoFormatter.AddDefinitions(extraDefs);
 
-            lock (this.Lock1)
-            {
-                sb.AppendLine();
-                sb.AppendLine("Debugging Information:");
-                sb.AppendLine("----------------------");
-                sb.AppendLine(infoFormatterString);
-            }
+            sb.AppendLine(infoFormatter.ToString());
 
-            lock (this.Lock2)
-            {
-                result = sb.ToString();
-            }
-            
-            return result;
+            return sb.ToString();
         }
     }
 }

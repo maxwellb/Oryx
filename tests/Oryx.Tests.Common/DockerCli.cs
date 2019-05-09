@@ -18,6 +18,8 @@ namespace Microsoft.Oryx.Tests.Common
 
         private readonly TimeSpan _waitTimeForExit;
         private readonly IEnumerable<EnvironmentVariable> _globalEnvVars;
+        private readonly Object Lock1 = new Object();
+        private readonly Object Lock2 = new Object();
 
         public DockerCli(IEnumerable<EnvironmentVariable> globalEnvVars = null)
             : this(TimeSpan.FromMinutes(10), globalEnvVars)
@@ -134,11 +136,17 @@ namespace Microsoft.Oryx.Tests.Common
                     // are called for each line that is written to the output.
                     standardOutputHandler: (sender, args) =>
                     {
-                        outputBuilder.AppendLine(args.Data);
+                        lock (Lock1)
+                        {
+                            outputBuilder.AppendLine(args.Data);
+                        }
                     },
                     standardErrorHandler: (sender, args) =>
                     {
-                        errorBuilder.AppendLine(args.Data);
+                        lock (Lock2)
+                        {
+                            errorBuilder.AppendLine(args.Data);
+                        }
                     });
             }
             catch (InvalidOperationException invalidOperationException)
