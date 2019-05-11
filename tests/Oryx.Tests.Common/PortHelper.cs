@@ -10,7 +10,7 @@ namespace Oryx.Tests.Common
 {
     public static class PortHelper
     {
-        public static int GetNextPort()
+        public static int GetNextAvailablePort()
         {
             using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
             {

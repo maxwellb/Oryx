@@ -25,7 +25,7 @@ namespace Microsoft.Oryx.Integration.Tests
         private readonly string _hostSamplesDir;
         private readonly string _hostTempDir;
         private readonly IList<string> _downloadedPaths = new List<string>();
-        private readonly int _hostPort = PortHelper.GetNextPort();
+        private readonly int _hostPort = PortHelper.GetNextAvailablePort();
 
         public PhpEndToEndTests(ITestOutputHelper output, TestTempDirTestFixture fixture)
         {

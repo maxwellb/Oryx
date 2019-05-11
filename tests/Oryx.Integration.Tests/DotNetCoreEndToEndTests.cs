@@ -28,7 +28,7 @@ namespace Microsoft.Oryx.Integration.Tests
         private readonly ITestOutputHelper _output;
         private readonly string _hostSamplesDir;
         private readonly string _tempRootDir;
-        private readonly int _hostPort = PortHelper.GetNextPort();
+        private readonly int _hostPort = PortHelper.GetNextAvailablePort();
 
         public DotNetCoreEndToEndTests(ITestOutputHelper output, TestTempDirTestFixture testTempDirTestFixture)
         {

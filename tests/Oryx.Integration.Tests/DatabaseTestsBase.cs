@@ -26,7 +26,7 @@ namespace Microsoft.Oryx.Integration.Tests
         {
             _output = outputHelper;
             _dbFixture = dbFixture;
-            _hostPort = PortHelper.GetNextPort();
+            _hostPort = PortHelper.GetNextAvailablePort();
             HostSamplesDir = Path.Combine(Directory.GetCurrentDirectory(), "SampleApps");
         }
 
