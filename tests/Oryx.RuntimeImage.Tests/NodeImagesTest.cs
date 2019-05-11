@@ -9,6 +9,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Oryx.Tests.Common;
+using Oryx.Tests.Common;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -204,7 +205,7 @@ namespace Microsoft.Oryx.RuntimeImage.Tests
             var hostDir = Path.Combine(_hostSamplesDir, "nodejs", appName);
             var volume = DockerVolume.Create(hostDir);
             var dir = volume.ContainerDir;
-            int hostPort = 8585;
+            int hostPort = PortHelper.GetNextPort();
             int containerPort = 80;
 
             var runAppScript = new ShellScriptBuilder()
@@ -242,7 +243,7 @@ namespace Microsoft.Oryx.RuntimeImage.Tests
             var hostDir = Path.Combine(_hostSamplesDir, "nodejs", appName);
             var volume = DockerVolume.Create(hostDir);
             var dir = volume.ContainerDir;
-            int hostPort = 8585;
+            int hostPort = PortHelper.GetNextPort();
             int containerPort = 80;
 
             var runAppScript = new ShellScriptBuilder()
@@ -280,7 +281,7 @@ namespace Microsoft.Oryx.RuntimeImage.Tests
             var hostDir = Path.Combine(_hostSamplesDir, "nodejs", appName);
             var volume = DockerVolume.Create(hostDir);
             var dir = volume.ContainerDir;
-            int hostPort = 8585;
+            int hostPort = PortHelper.GetNextPort();
             int containerPort = 80;
 
             var runAppScript = new ShellScriptBuilder()
@@ -317,7 +318,7 @@ namespace Microsoft.Oryx.RuntimeImage.Tests
             var hostDir = Path.Combine(_hostSamplesDir, "nodejs", appName);
             var volume = DockerVolume.Create(hostDir);
             var dir = volume.ContainerDir;
-            int hostPort = 8585;
+            int hostPort = PortHelper.GetNextPort();
             int containerDebugPort = 8080;
 
             var runAppScript = new ShellScriptBuilder()
@@ -372,7 +373,7 @@ namespace Microsoft.Oryx.RuntimeImage.Tests
                     console.log(e); 
                 } ";
 
-            int hostPort = 8585;
+            int hostPort = PortHelper.GetNextPort();
             int containerDebugPort = 8080;
 
             var script = new ShellScriptBuilder()

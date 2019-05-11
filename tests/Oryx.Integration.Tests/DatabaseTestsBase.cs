@@ -9,6 +9,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Oryx.Tests.Common;
+using Oryx.Tests.Common;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -18,7 +19,6 @@ namespace Microsoft.Oryx.Integration.Tests
     {
         protected readonly ITestOutputHelper _output;
         protected readonly Fixtures.DbContainerFixtureBase _dbFixture;
-        private static readonly Random _rand = new Random();
         protected readonly int _hostPort;
         protected readonly HttpClient _httpClient = new HttpClient();
 
@@ -26,14 +26,18 @@ namespace Microsoft.Oryx.Integration.Tests
         {
             _output = outputHelper;
             _dbFixture = dbFixture;
-            _hostPort = 8080 + _rand.Next(100);
+            _hostPort = PortHelper.GetNextPort();
             HostSamplesDir = Path.Combine(Directory.GetCurrentDirectory(), "SampleApps");
         }
 
         protected string HostSamplesDir { get; }
 
-        protected async Task RunTestAsync(string language, string languageVersion, string samplePath,
-            int containerPort = 8000, bool specifyBindPortFlag = true)
+        protected async Task RunTestAsync(
+            string language,
+            string languageVersion,
+            string samplePath,
+            int containerPort = 8000,
+            bool specifyBindPortFlag = true)
         {
             var volume = DockerVolume.Create(samplePath);
             var appDir = volume.ContainerDir;

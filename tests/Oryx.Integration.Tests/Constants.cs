@@ -16,10 +16,5 @@ namespace Microsoft.Oryx.Integration.Tests
         public const string DatabaseName = "oryxdb";
         public const string DatabaseUserName = "oryxuser";
         public static readonly string DatabaseUserPwd = System.Guid.NewGuid().ToString();
-
-        internal const int NodeEndToEndTestsPort = 8010;
-        internal const int PythonEndToEndTestsPort = NodeEndToEndTestsPort + 10;
-        internal const int DotNetCoreEndToEndTestsPort = PythonEndToEndTestsPort + 10;
-        internal const int PhpEndToEndTestsPort = DotNetCoreEndToEndTestsPort + 10;
     }
 }

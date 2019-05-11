@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Oryx.Tests.Common;
+using Oryx.Tests.Common;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -16,13 +17,13 @@ namespace Microsoft.Oryx.Integration.Tests
     [Trait("category", "python")]
     public class PythonEndToEndTests : PlatformEndToEndTestsBase
     {
-        private const int HostPort = Constants.PythonEndToEndTestsPort;
         private const int ContainerPort = 3000;
         private const string DefaultStartupFilePath = "./run.sh";
 
         private readonly ITestOutputHelper _output;
         private readonly string _hostSamplesDir;
         private readonly string _tempRootDir;
+        private readonly int _hostPort = PortHelper.GetNextPort();
 
         public PythonEndToEndTests(ITestOutputHelper output, TestTempDirTestFixture testTempDirTestFixture)
         {
@@ -40,7 +41,7 @@ namespace Microsoft.Oryx.Integration.Tests
             var volume = DockerVolume.Create(hostDir);
             var appDir = volume.ContainerDir;
             var startupFile = "/tmp/startup.sh";
-            var portMapping = $"{HostPort}:{ContainerPort}";
+            var portMapping = $"{_hostPort}:{ContainerPort}";
             var script = new ShellScriptBuilder()
                 .AddCommand($"cd {appDir}")
                 .AddCommand($"oryx -appPath {appDir} -output {startupFile} -bindPort {ContainerPort}")
@@ -63,7 +64,7 @@ namespace Microsoft.Oryx.Integration.Tests
                 },
                 async () =>
                 {
-                    var data = await _httpClient.GetStringAsync($"http://localhost:{HostPort}/");
+                    var data = await _httpClient.GetStringAsync($"http://localhost:{_hostPort}/");
                     Assert.Contains("Hello World!", data);
                 });
         }
@@ -77,7 +78,7 @@ namespace Microsoft.Oryx.Integration.Tests
             var volume = DockerVolume.Create(hostDir);
             var appDir = volume.ContainerDir;
             const string virtualEnvName = "antenv2.7";
-            var portMapping = $"{HostPort}:{ContainerPort}";
+            var portMapping = $"{_hostPort}:{ContainerPort}";
             var buildScript = new ShellScriptBuilder()
                 .AddBuildCommand($"{appDir} -l python --language-version 2.7 -p virtualenv_name={virtualEnvName}")
                 .ToString();
@@ -110,7 +111,7 @@ namespace Microsoft.Oryx.Integration.Tests
                 },
                 async () =>
                 {
-                    var data = await _httpClient.GetStringAsync($"http://localhost:{HostPort}/");
+                    var data = await _httpClient.GetStringAsync($"http://localhost:{_hostPort}/");
                     Assert.Contains("Hello World!", data);
                 });
         }
@@ -123,7 +124,7 @@ namespace Microsoft.Oryx.Integration.Tests
             var hostDir = Path.Combine(_hostSamplesDir, "python", appName);
             var volume = DockerVolume.Create(hostDir);
             var appDir = volume.ContainerDir;
-            var portMapping = $"{HostPort}:{ContainerPort}";
+            var portMapping = $"{_hostPort}:{ContainerPort}";
             var script = new ShellScriptBuilder()
                 .AddCommand($"cd {appDir}")
                 .AddCommand($"oryx -appPath {appDir} -bindPort {ContainerPort}")
@@ -146,7 +147,7 @@ namespace Microsoft.Oryx.Integration.Tests
                 },
                 async () =>
                 {
-                    var data = await _httpClient.GetStringAsync($"http://localhost:{HostPort}/");
+                    var data = await _httpClient.GetStringAsync($"http://localhost:{_hostPort}/");
                     Assert.Contains("Hello World!", data);
                 });
         }
@@ -159,7 +160,7 @@ namespace Microsoft.Oryx.Integration.Tests
             var hostDir = Path.Combine(_hostSamplesDir, "python", appName);
             var volume = DockerVolume.Create(hostDir);
             var appDir = volume.ContainerDir;
-            var portMapping = $"{HostPort}:{ContainerPort}";
+            var portMapping = $"{_hostPort}:{ContainerPort}";
             var script = new ShellScriptBuilder()
                 .AddCommand($"cd {appDir}")
                 .AddCommand($"oryx -appPath {appDir} -bindPort {ContainerPort}")
@@ -182,7 +183,7 @@ namespace Microsoft.Oryx.Integration.Tests
                 },
                 async () =>
                 {
-                    var data = await _httpClient.GetStringAsync($"http://localhost:{HostPort}/");
+                    var data = await _httpClient.GetStringAsync($"http://localhost:{_hostPort}/");
                     Assert.Contains("Hello World!", data);
                 });
         }
@@ -196,7 +197,7 @@ namespace Microsoft.Oryx.Integration.Tests
             var hostDir = Path.Combine(_hostSamplesDir, "python", appName);
             var volume = DockerVolume.Create(hostDir);
             var appDir = volume.ContainerDir;
-            var portMapping = $"{HostPort}:{ContainerPort}";
+            var portMapping = $"{_hostPort}:{ContainerPort}";
             var script = new ShellScriptBuilder()
                 .AddCommand($"cd {appDir}")
                 .AddCommand($"oryx -appPath {appDir} -bindPort {ContainerPort} -virtualEnvName {virtualEnvName}")
@@ -219,7 +220,7 @@ namespace Microsoft.Oryx.Integration.Tests
                 },
                 async () =>
                 {
-                    var data = await _httpClient.GetStringAsync($"http://localhost:{HostPort}/");
+                    var data = await _httpClient.GetStringAsync($"http://localhost:{_hostPort}/");
                     Assert.Contains("Hello World!", data);
                 });
         }
@@ -237,7 +238,7 @@ namespace Microsoft.Oryx.Integration.Tests
             var hostDir = Path.Combine(_hostSamplesDir, "python", appName);
             var volume = DockerVolume.Create(hostDir);
             var appDir = volume.ContainerDir;
-            var portMapping = $"{HostPort}:{ContainerPort}";
+            var portMapping = $"{_hostPort}:{ContainerPort}";
             var appOutputDirPath = Directory.CreateDirectory(
                 Path.Combine(_tempRootDir, Guid.NewGuid().ToString("N"))).FullName;
             var appOutputDirVolume = DockerVolume.Create(appOutputDirPath);
@@ -277,7 +278,7 @@ namespace Microsoft.Oryx.Integration.Tests
                 },
                 async () =>
                 {
-                    var data = await _httpClient.GetStringAsync($"http://localhost:{HostPort}/");
+                    var data = await _httpClient.GetStringAsync($"http://localhost:{_hostPort}/");
                     Assert.Contains("Hello World!", data);
                 });
         }
@@ -290,7 +291,7 @@ namespace Microsoft.Oryx.Integration.Tests
             var hostDir = Path.Combine(_hostSamplesDir, "python", appName);
             var volume = DockerVolume.Create(hostDir);
             var appDir = volume.ContainerDir;
-            var portMapping = $"{HostPort}:{ContainerPort}";
+            var portMapping = $"{_hostPort}:{ContainerPort}";
             var script = new ShellScriptBuilder()
                 .AddCommand($"cd {appDir}")
                 .AddCommand($"oryx -appPath {appDir} -bindPort {ContainerPort}")
@@ -313,16 +314,16 @@ namespace Microsoft.Oryx.Integration.Tests
                 },
                 async () =>
                 {
-                    var data = await GetResponseDataAsync($"http://localhost:{HostPort}/staticfiles/css/boards.css");
+                    var data = await GetResponseDataAsync($"http://localhost:{_hostPort}/staticfiles/css/boards.css");
                     Assert.Contains("CSS file from Boards app module", data);
 
-                    data = await GetResponseDataAsync($"http://localhost:{HostPort}/staticfiles/css/uservoice.css");
+                    data = await GetResponseDataAsync($"http://localhost:{_hostPort}/staticfiles/css/uservoice.css");
                     Assert.Contains("CSS file from UserVoice app module", data);
 
-                    data = await GetResponseDataAsync($"http://localhost:{HostPort}/boards/");
+                    data = await GetResponseDataAsync($"http://localhost:{_hostPort}/boards/");
                     Assert.Contains("Hello, World! from Boards app", data);
 
-                    data = await GetResponseDataAsync($"http://localhost:{HostPort}/uservoice/");
+                    data = await GetResponseDataAsync($"http://localhost:{_hostPort}/uservoice/");
                     Assert.Contains("Hello, World! from Uservoice app", data);
                 });
         }
@@ -339,7 +340,7 @@ namespace Microsoft.Oryx.Integration.Tests
             var appOutputDirVolume = DockerVolume.Create(appOutputDirPath);
             var appOutputDir = appOutputDirVolume.ContainerDir;
             var appDir = volume.ContainerDir;
-            var portMapping = $"{HostPort}:{ContainerPort}";
+            var portMapping = $"{_hostPort}:{ContainerPort}";
             const string virtualEnvName = "antenv";
 
             var buildScript = new ShellScriptBuilder()
@@ -375,16 +376,16 @@ namespace Microsoft.Oryx.Integration.Tests
                 },
                 async () =>
                 {
-                    var data = await GetResponseDataAsync($"http://localhost:{HostPort}/staticfiles/css/boards.css");
+                    var data = await GetResponseDataAsync($"http://localhost:{_hostPort}/staticfiles/css/boards.css");
                     Assert.Contains("CSS file from Boards app module", data);
 
-                    data = await GetResponseDataAsync($"http://localhost:{HostPort}/staticfiles/css/uservoice.css");
+                    data = await GetResponseDataAsync($"http://localhost:{_hostPort}/staticfiles/css/uservoice.css");
                     Assert.Contains("CSS file from UserVoice app module", data);
 
-                    data = await GetResponseDataAsync($"http://localhost:{HostPort}/boards/");
+                    data = await GetResponseDataAsync($"http://localhost:{_hostPort}/boards/");
                     Assert.Contains("Hello, World! from Boards app", data);
 
-                    data = await GetResponseDataAsync($"http://localhost:{HostPort}/uservoice/");
+                    data = await GetResponseDataAsync($"http://localhost:{_hostPort}/uservoice/");
                     Assert.Contains("Hello, World! from Uservoice app", data);
                 });
         }
@@ -399,7 +400,7 @@ namespace Microsoft.Oryx.Integration.Tests
             var hostDir = Path.Combine(_hostSamplesDir, "python", appName);
             var volume = DockerVolume.Create(hostDir);
             var appDir = volume.ContainerDir;
-            var portMapping = $"{HostPort}:{ContainerPort}";
+            var portMapping = $"{_hostPort}:{ContainerPort}";
             const string virtualEnvName = "antenv";
 
             // Simulate apps that were built using package directory, and then virtual env
@@ -429,16 +430,16 @@ namespace Microsoft.Oryx.Integration.Tests
                 new[] { "-c", runScript },
                 async () =>
                 {
-                    var data = await GetResponseDataAsync($"http://localhost:{HostPort}/staticfiles/css/boards.css");
+                    var data = await GetResponseDataAsync($"http://localhost:{_hostPort}/staticfiles/css/boards.css");
                     Assert.Contains("CSS file from Boards app module", data);
 
-                    data = await GetResponseDataAsync($"http://localhost:{HostPort}/staticfiles/css/uservoice.css");
+                    data = await GetResponseDataAsync($"http://localhost:{_hostPort}/staticfiles/css/uservoice.css");
                     Assert.Contains("CSS file from UserVoice app module", data);
 
-                    data = await GetResponseDataAsync($"http://localhost:{HostPort}/boards/");
+                    data = await GetResponseDataAsync($"http://localhost:{_hostPort}/boards/");
                     Assert.Contains("Hello, World! from Boards app", data);
 
-                    data = await GetResponseDataAsync($"http://localhost:{HostPort}/uservoice/");
+                    data = await GetResponseDataAsync($"http://localhost:{_hostPort}/uservoice/");
                     Assert.Contains("Hello, World! from Uservoice app", data);
                 });
         }
@@ -451,7 +452,7 @@ namespace Microsoft.Oryx.Integration.Tests
             var hostDir = Path.Combine(_hostSamplesDir, "python", appName);
             var volume = DockerVolume.Create(hostDir);
             var appDir = volume.ContainerDir;
-            var portMapping = $"{HostPort}:{ContainerPort}";
+            var portMapping = $"{_hostPort}:{ContainerPort}";
             const string virtualEnvName = "antenv3.6";
             var buildScript = new ShellScriptBuilder()
                 .AddBuildCommand($"{appDir} -l python --language-version 3.6 -p virtualenv_name={virtualEnvName}")
@@ -482,16 +483,16 @@ namespace Microsoft.Oryx.Integration.Tests
                 },
                 async () =>
                 {
-                    var data = await GetResponseDataAsync($"http://localhost:{HostPort}/staticfiles/css/boards.css");
+                    var data = await GetResponseDataAsync($"http://localhost:{_hostPort}/staticfiles/css/boards.css");
                     Assert.Contains("CSS file from Boards app module", data);
 
-                    data = await GetResponseDataAsync($"http://localhost:{HostPort}/staticfiles/css/uservoice.css");
+                    data = await GetResponseDataAsync($"http://localhost:{_hostPort}/staticfiles/css/uservoice.css");
                     Assert.Contains("CSS file from UserVoice app module", data);
 
-                    data = await GetResponseDataAsync($"http://localhost:{HostPort}/boards/");
+                    data = await GetResponseDataAsync($"http://localhost:{_hostPort}/boards/");
                     Assert.Contains("Hello, World! from Boards app", data);
 
-                    data = await GetResponseDataAsync($"http://localhost:{HostPort}/uservoice/");
+                    data = await GetResponseDataAsync($"http://localhost:{_hostPort}/uservoice/");
                     Assert.Contains("Hello, World! from Uservoice app", data);
                 });
         }
@@ -504,7 +505,7 @@ namespace Microsoft.Oryx.Integration.Tests
             var hostDir = Path.Combine(_hostSamplesDir, "python", appName);
             var volume = DockerVolume.Create(hostDir);
             var appDir = volume.ContainerDir;
-            var portMapping = $"{HostPort}:{ContainerPort}";
+            var portMapping = $"{_hostPort}:{ContainerPort}";
             var script = new ShellScriptBuilder()
                 .AddCommand($"cd {appDir}")
                 .AddCommand($"oryx -appPath {appDir} -bindPort {ContainerPort}")
@@ -527,16 +528,16 @@ namespace Microsoft.Oryx.Integration.Tests
                 },
                 async () =>
                 {
-                    var data = await GetResponseDataAsync($"http://localhost:{HostPort}/staticfiles/css/boards.css");
+                    var data = await GetResponseDataAsync($"http://localhost:{_hostPort}/staticfiles/css/boards.css");
                     Assert.Contains("CSS file from Boards app module", data);
 
-                    data = await GetResponseDataAsync($"http://localhost:{HostPort}/staticfiles/css/uservoice.css");
+                    data = await GetResponseDataAsync($"http://localhost:{_hostPort}/staticfiles/css/uservoice.css");
                     Assert.Contains("CSS file from UserVoice app module", data);
 
-                    data = await GetResponseDataAsync($"http://localhost:{HostPort}/boards/");
+                    data = await GetResponseDataAsync($"http://localhost:{_hostPort}/boards/");
                     Assert.Contains("Hello, World! from Boards app", data);
 
-                    data = await GetResponseDataAsync($"http://localhost:{HostPort}/uservoice/");
+                    data = await GetResponseDataAsync($"http://localhost:{_hostPort}/uservoice/");
                     Assert.Contains("Hello, World! from Uservoice app", data);
                 });
         }
@@ -549,7 +550,7 @@ namespace Microsoft.Oryx.Integration.Tests
             var hostDir = Path.Combine(_hostSamplesDir, "python", appName);
             var volume = DockerVolume.Create(hostDir);
             var appDir = volume.ContainerDir;
-            var portMapping = $"{HostPort}:{ContainerPort}";
+            var portMapping = $"{_hostPort}:{ContainerPort}";
             var script = new ShellScriptBuilder()
                 .AddCommand($"cd {appDir}")
                 .AddCommand($"oryx -appPath {appDir} -bindPort {ContainerPort}")
@@ -572,7 +573,7 @@ namespace Microsoft.Oryx.Integration.Tests
                 },
                 async () =>
                 {
-                    var data = await _httpClient.GetStringAsync($"http://localhost:{HostPort}/");
+                    var data = await _httpClient.GetStringAsync($"http://localhost:{_hostPort}/");
                     Assert.Contains("logged in as: bob", data);
                 });
         }
@@ -586,7 +587,7 @@ namespace Microsoft.Oryx.Integration.Tests
             var hostDir = Path.Combine(_hostSamplesDir, "python", appName);
             var volume = DockerVolume.Create(hostDir);
             var appDir = volume.ContainerDir;
-            var portMapping = $"{HostPort}:{ContainerPort}";
+            var portMapping = $"{_hostPort}:{ContainerPort}";
             var script = new ShellScriptBuilder()
                 .AddCommand($"cd {appDir}")
                 .AddCommand($"oryx -appPath {appDir} -bindPort {ContainerPort}")
@@ -610,7 +611,7 @@ namespace Microsoft.Oryx.Integration.Tests
                 },
                 async () =>
                 {
-                    var data = await _httpClient.GetStringAsync($"http://localhost:{HostPort}/");
+                    var data = await _httpClient.GetStringAsync($"http://localhost:{_hostPort}/");
                     Assert.Contains("Hello Shapely, Area is: 314", data);
                 });
         }
@@ -625,7 +626,7 @@ namespace Microsoft.Oryx.Integration.Tests
             var hostDir = Path.Combine(_hostSamplesDir, "python", appName);
             var volume = DockerVolume.Create(hostDir);
             var appDir = volume.ContainerDir;
-            var portMapping = $"{HostPort}:{ContainerPort}";
+            var portMapping = $"{_hostPort}:{ContainerPort}";
             var script = new ShellScriptBuilder()
                 .AddCommand($"cd {appDir}")
                 .AddCommand($"oryx -appPath {appDir} -bindPort {ContainerPort} -packagedir {packageDir}")
@@ -649,7 +650,7 @@ namespace Microsoft.Oryx.Integration.Tests
                 },
                 async () =>
                 {
-                    var data = await _httpClient.GetStringAsync($"http://localhost:{HostPort}/");
+                    var data = await _httpClient.GetStringAsync($"http://localhost:{_hostPort}/");
                     Assert.Contains("Hello Shapely, Area is: 314", data);
                 });
         }
@@ -662,7 +663,7 @@ namespace Microsoft.Oryx.Integration.Tests
             var hostDir = Path.Combine(_hostSamplesDir, "python", appName);
             var volume = DockerVolume.Create(hostDir);
             var appDir = volume.ContainerDir;
-            var portMapping = $"{HostPort}:{ContainerPort}";
+            var portMapping = $"{_hostPort}:{ContainerPort}";
             var script = new ShellScriptBuilder()
                 .AddCommand($"cd {appDir}")
                 .AddCommand($"export PORT={ContainerPort}")
@@ -686,7 +687,7 @@ namespace Microsoft.Oryx.Integration.Tests
                 },
                 async () =>
                 {
-                    var data = await _httpClient.GetStringAsync($"http://localhost:{HostPort}/");
+                    var data = await _httpClient.GetStringAsync($"http://localhost:{_hostPort}/");
                     Assert.Contains("Hello World!", data);
                 });
         }
@@ -699,7 +700,7 @@ namespace Microsoft.Oryx.Integration.Tests
             var hostDir = Path.Combine(_hostSamplesDir, "python", appName);
             var volume = DockerVolume.Create(hostDir);
             var appDir = volume.ContainerDir;
-            var portMapping = $"{HostPort}:{ContainerPort}";
+            var portMapping = $"{_hostPort}:{ContainerPort}";
             var script = new ShellScriptBuilder()
                 .AddCommand($"cd {appDir}")
                 .AddCommand($"export PORT=9095")
@@ -723,7 +724,7 @@ namespace Microsoft.Oryx.Integration.Tests
                 },
                 async () =>
                 {
-                    var data = await _httpClient.GetStringAsync($"http://localhost:{HostPort}/");
+                    var data = await _httpClient.GetStringAsync($"http://localhost:{_hostPort}/");
                     Assert.Contains("Hello World!", data);
                 });
         }
@@ -736,7 +737,7 @@ namespace Microsoft.Oryx.Integration.Tests
             var hostDir = Path.Combine(_hostSamplesDir, "multilanguage", appName);
             var volume = DockerVolume.Create(hostDir);
             var appDir = volume.ContainerDir;
-            var portMapping = $"{HostPort}:{ContainerPort}";
+            var portMapping = $"{_hostPort}:{ContainerPort}";
 
             var buildScript = new ShellScriptBuilder()
                 .AddCommand("export ENABLE_MULTIPLATFORM_BUILD=true")
@@ -773,7 +774,7 @@ namespace Microsoft.Oryx.Integration.Tests
                 },
                 async () =>
                 {
-                    var data = await GetResponseDataAsync($"http://localhost:{HostPort}/");
+                    var data = await GetResponseDataAsync($"http://localhost:{_hostPort}/");
                     Assert.Contains("<h1>it works! (Django Template)</h1>", data);
 
                     // Looks for the link to the webpack-generated file
@@ -788,7 +789,7 @@ namespace Microsoft.Oryx.Integration.Tests
                     int length = linkdEndIx - linkStartIdx - 2;
                     var link = data.Substring(linkStartIdx + 5, length);
 
-                    data = await GetResponseDataAsync($"http://localhost:{HostPort}{link}");
+                    data = await GetResponseDataAsync($"http://localhost:{_hostPort}{link}");
                     Assert.Contains("!function(e){var t={};function n(r){if(t[r])return t[r].exports", data);
                 });
         }
