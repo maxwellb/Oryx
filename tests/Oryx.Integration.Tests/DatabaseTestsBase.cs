@@ -9,7 +9,6 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Oryx.Tests.Common;
-using Oryx.Tests.Common;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -19,14 +18,12 @@ namespace Microsoft.Oryx.Integration.Tests
     {
         protected readonly ITestOutputHelper _output;
         protected readonly Fixtures.DbContainerFixtureBase _dbFixture;
-        protected readonly int _hostPort;
         protected readonly HttpClient _httpClient = new HttpClient();
 
         protected DatabaseTestsBase(ITestOutputHelper outputHelper, Fixtures.DbContainerFixtureBase dbFixture)
         {
             _output = outputHelper;
             _dbFixture = dbFixture;
-            _hostPort = PortHelper.GetNextAvailablePort();
             HostSamplesDir = Path.Combine(Directory.GetCurrentDirectory(), "SampleApps");
         }
 
@@ -41,7 +38,6 @@ namespace Microsoft.Oryx.Integration.Tests
         {
             var volume = DockerVolume.Create(samplePath);
             var appDir = volume.ContainerDir;
-            var portMapping = $"{_hostPort}:{containerPort}";
             var entrypointScript = "./run.sh";
             var bindPortFlag = specifyBindPortFlag ? $"-bindPort {containerPort}" : string.Empty;
             var script = new ShellScriptBuilder()
@@ -64,11 +60,12 @@ namespace Microsoft.Oryx.Integration.Tests
                 "oryx", new[] { "build", appDir, "-l", language, "--language-version", languageVersion },
                 runtimeImageName,
                 _dbFixture.GetCredentialsAsEnvVars(),
-                portMapping, link,
+                containerPort,
+                link,
                 "/bin/sh", new[] { "-c", script },
-                async () =>
+                async (hostPort) =>
                 {
-                    var data = await _httpClient.GetStringAsync($"http://localhost:{_hostPort}/");
+                    var data = await _httpClient.GetStringAsync($"http://localhost:{hostPort}/");
                     Assert.Equal(
                         _dbFixture.GetSampleDataAsJson(),
                         data.Trim(),

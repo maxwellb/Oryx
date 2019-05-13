@@ -27,10 +27,10 @@ namespace Microsoft.Oryx.Tests.Common
             string buildCmd,
             string[] buildArgs,
             string runtimeImageName,
-            string portMapping,
+            int port,
             string runCmd,
             string[] runArgs,
-            Func<Task> assertAction)
+            Func<int, Task> assertAction)
         {
             return BuildRunAndAssertAppAsync(
                 appName,
@@ -39,7 +39,7 @@ namespace Microsoft.Oryx.Tests.Common
                 buildCmd,
                 buildArgs,
                 runtimeImageName,
-                portMapping,
+                port,
                 runCmd,
                 runArgs,
                 assertAction);
@@ -53,10 +53,10 @@ namespace Microsoft.Oryx.Tests.Common
             string[] buildArgs,
             string runtimeImageName,
             List<EnvironmentVariable> environmentVariables,
-            string portMapping,
+            int port,
             string runCmd,
             string[] runArgs,
-            Func<Task> assertAction)
+            Func<int, Task> assertAction)
         {
             var AppNameEnvVariable = new EnvironmentVariable(
                 LoggingConstants.AppServiceAppNameEnvironmentVariableName,
@@ -69,7 +69,7 @@ namespace Microsoft.Oryx.Tests.Common
                 buildArgs,
                 runtimeImageName,
                 environmentVariables,
-                portMapping,
+                port,
                 link: null,
                 runCmd,
                 runArgs,
@@ -83,10 +83,10 @@ namespace Microsoft.Oryx.Tests.Common
             string buildCmd,
             string[] buildArgs,
             string runtimeImageName,
-            string portMapping,
+            int port,
             string runCmd,
             string[] runArgs,
-            Func<Task> assertAction)
+            Func<int, Task> assertAction)
         {
             return BuildRunAndAssertAppAsync(
                 output,
@@ -98,7 +98,7 @@ namespace Microsoft.Oryx.Tests.Common
                 {
                     new EnvironmentVariable(LoggingConstants.AppServiceAppNameEnvironmentVariableName, appName)
                 },
-                portMapping,
+                port,
                 link: null,
                 runCmd,
                 runArgs,
@@ -119,24 +119,24 @@ namespace Microsoft.Oryx.Tests.Common
             string[] buildArgs,
             string runtimeImageName,
             List<EnvironmentVariable> environmentVariables,
-            string portMapping,
+            int port,
             string link,
             string runCmd,
             string[] runArgs,
-            Func<Task> assertAction)
+            Func<int, Task> assertAction)
         {
             var dockerCli = new DockerCli();
 
             // Build
-            var buildAppResult = dockerCli.Run(
-                Settings.BuildImageName,
-                environmentVariables: environmentVariables,
-                volumes: volumes,
-                portMapping: null,
-                link: null,
-                runContainerInBackground: false,
-                commandToExecuteOnRun: buildCmd,
-                commandArguments: buildArgs);
+            var buildAppResult = dockerCli.Run(new DockerRunArguments
+            {
+                ImageId = Settings.BuildImageName,
+                EnvironmentVariables = environmentVariables,
+                Volumes = volumes,
+                RunContainerInBackground = false,
+                CommandToExecuteOnRun = buildCmd,
+                CommandArguments = buildArgs,
+            });
 
             await RunAssertsAsync(
                () =>
@@ -153,7 +153,7 @@ namespace Microsoft.Oryx.Tests.Common
                 output,
                 volumes,
                 environmentVariables,
-                portMapping,
+                port,
                 link,
                 runCmd,
                 runArgs,
@@ -166,11 +166,11 @@ namespace Microsoft.Oryx.Tests.Common
             ITestOutputHelper output,
             List<DockerVolume> volumes,
             List<EnvironmentVariable> environmentVariables,
-            string portMapping,
+            int port,
             string link,
             string runCmd,
             string[] runArgs,
-            Func<Task> assertAction,
+            Func<int, Task> assertAction,
             DockerCli dockerCli)
         {
             DockerRunCommandProcessResult runResult = null;
@@ -179,18 +179,30 @@ namespace Microsoft.Oryx.Tests.Common
             {
                 // Docker run the runtime container as a foreground process. This way we can catch any errors
                 // that might occur when the application is being started.
-                runResult = dockerCli.RunAndDoNotWaitForProcessExit(
-                    imageName,
-                    environmentVariables,
-                    volumes: volumes,
-                    portMapping,
-                    link,
-                    runCmd,
-                    runArgs);
+                runResult = dockerCli.RunAndDoNotWaitForProcessExit(new DockerRunArguments
+                {
+                    ImageId = imageName,
+                    EnvironmentVariables = environmentVariables,
+                    Volumes = volumes,
+                    PortInContainer = port,
+                    Link = link,
+                    CommandToExecuteOnRun = runCmd,
+                    CommandArguments = runArgs
+                });
 
                 // An exception could have occurred when a Docker process failed to start.
                 Assert.Null(runResult.Exception);
                 Assert.False(runResult.Process.HasExited);
+
+                // Example output that is ouput when "docker port <container-name>" is run: 
+                // 6379/tcp -> 0.0.0.0:32774
+                var getPortMappingResult = dockerCli.GetPortMapping(runResult.ContainerName, port);
+                Assert.Null(getPortMappingResult.Exception);
+                var stdOut = getPortMappingResult.StdOut;
+                stdOut = stdOut?.Trim();
+                var mappingParts = stdOut.Split(":");
+                Assert.Equal(2, mappingParts.Length);
+                var hostPort = Convert.ToInt32(mappingParts[1]);
 
                 for (var i = 0; i < MaxRetryCount; i++)
                 {
@@ -200,7 +212,7 @@ namespace Microsoft.Oryx.Tests.Common
                     {
                         // Make sure the process is still alive and fail fast if not.
                         Assert.False(runResult.Process.HasExited);
-                        await assertAction();
+                        await assertAction(hostPort);
 
                         showDebugInfo = false;
                         break;
