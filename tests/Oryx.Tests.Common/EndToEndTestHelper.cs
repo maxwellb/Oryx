@@ -198,8 +198,8 @@ namespace Microsoft.Oryx.Tests.Common
                 // 6379/tcp -> 0.0.0.0:32774
                 var getPortMappingResult = dockerCli.GetPortMapping(runResult.ContainerName, port);
                 Assert.Null(getPortMappingResult.Exception);
-                var stdOut = getPortMappingResult.StdOut;
-                stdOut = stdOut?.Trim();
+                Assert.False(string.IsNullOrEmpty(getPortMappingResult.StdOut));
+                var stdOut = getPortMappingResult.StdOut.Trim().ReplaceNewLine();
                 var mappingParts = stdOut.Split(":");
                 Assert.Equal(2, mappingParts.Length);
                 var hostPort = Convert.ToInt32(mappingParts[1]);
