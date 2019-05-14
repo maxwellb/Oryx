@@ -140,7 +140,7 @@ namespace Microsoft.Oryx.RuntimeImage.Tests
             var result = _dockerCli.Run(new DockerRunArguments
             {
                 ImageId = $"oryxdevms/node-{nodeTag}:latest",
-                CommandToExecuteOnRun = "node",
+                CommandToExecuteOnRun = "/bin/sh",
                 CommandArguments = new[]
                 {
                     "-c",
